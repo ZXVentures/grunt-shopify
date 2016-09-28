@@ -4,7 +4,8 @@ var path = require('path'),
     async = require('async'),
     fs = require('fs'),
     isBinaryFile = require('isbinaryfile'),
-    ShopifyApi = require('shopify-api');
+    ShopifyApi = require('shopify-api'),
+    _ = require('lodash');
 
 module.exports = function(grunt) {
     var shopify = {};
@@ -365,6 +366,50 @@ module.exports = function(grunt) {
     };
 
     /*
+     * Deploy assets that have changed to Shopify.
+     *
+     * @param {Function} done
+     */
+    shopify.deployChanged = function(done, options) {
+        var c = grunt.config('shopify');
+
+        var basePath = shopify._getBasePath();
+        var basename = path.basename(basePath);
+
+        grunt.util.spawn({
+            cmd: 'git',
+            args: ['diff', 'HEAD', '--name-only'] // staged and working tree files
+        }, function(error, result){
+
+            var modifiedFiles = _.compact(String(result).split(grunt.util.linefeed));
+            var modifiedShopFiles = modifiedFiles.filter(function(file) {
+                return file.indexOf(basename+'/') > -1;
+            });
+
+            if (options.noJson) {
+                var index = modifiedShopFiles.indexOf('config/settings_data.json');
+                modifiedShopFiles.splice(index, 1);
+            }
+
+            grunt.verbose.writeln('Modified files:' + modifiedFiles);
+            grunt.verbose.writeln('Modified shop files:' + modifiedShopFiles);
+
+            async.eachSeries(modifiedShopFiles, function(filepath, next) {
+                filepath = filepath.replace(basename+'/', '');
+                shopify.upload(path.join(basePath, filepath), next);
+            }, function(err, resp) {
+                if (err && err.type === 'ShopifyInvalidRequestError') {
+                    shopify.notify('Error deploying theme ' + JSON.stringify(err.detail), true);
+                    done(err);
+                } else if (!err) {
+                    shopify.notify('Theme deploy complete.');
+                    done();
+                }
+            });
+        });
+    };
+
+    /*
      * Download an asset from Shopify.
      *
      * @param {string} filepath
@@ -575,7 +620,7 @@ module.exports = function(grunt) {
                 case 'changed':
                 case 'renamed':
                 shopify.queue.push({
-                    action: 'upload',
+                    action: 'upload-changed',
                     filepath: filepath,
                     done: errorHandler
                 });
