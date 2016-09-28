@@ -47,6 +47,14 @@ module.exports = function(grunt) {
         }
     });
 
+    grunt.registerTask('shopify:upload-changed', 'Uploads changed files to Shopify', function() {
+        var done = this.async();
+        var options = {
+            noJson: grunt.option('no-json')
+        }
+        shopify.deployChanged(done, options);
+    });
+
     grunt.registerTask('shopify:delete', 'Removes a theme file from Shopify', function(p) {
         var done = this.async();
         shopify.remove(p, done);
