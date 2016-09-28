@@ -620,7 +620,7 @@ module.exports = function(grunt) {
                 case 'changed':
                 case 'renamed':
                 shopify.queue.push({
-                    action: 'upload-changed',
+                    action: 'upload',
                     filepath: filepath,
                     done: errorHandler
                 });
