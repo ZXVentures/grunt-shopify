@@ -50,7 +50,8 @@ module.exports = function(grunt) {
     grunt.registerTask('shopify:upload-changed', 'Uploads changed files to Shopify', function() {
         var done = this.async();
         var options = {
-            noJson: grunt.option('no-json')
+            noJson: grunt.option('no-json'),
+            commit: grunt.option('commit')
         }
         shopify.deployChanged(done, options);
     });

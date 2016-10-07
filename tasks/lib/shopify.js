@@ -376,9 +376,15 @@ module.exports = function(grunt) {
         var basePath = shopify._getBasePath();
         var basename = path.basename(basePath);
 
+        var cmdArgs = ['diff', 'HEAD'];
+        if (options.commit) {
+            cmdArgs.push(options.commit);
+        }
+        cmdArgs.push('--name-only');
+
         grunt.util.spawn({
             cmd: 'git',
-            args: ['diff', 'HEAD', '--name-only'] // staged and working tree files
+            args: cmdArgs // staged and working tree files
         }, function(error, result){
 
             var modifiedFiles = _.compact(String(result).split(grunt.util.linefeed));
