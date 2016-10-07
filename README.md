@@ -132,6 +132,19 @@ file, use the `--no-json` option:
 grunt shopify:upload --no-json
 ```
 
+Using `grunt shopify:upload-changed` you can upload various sets of changes,
+either since the last commit (HEAD) or by specifying a specific commit.
+
+```shell
+# deploy changes since last commit
+grunt shopify:upload-changed
+```
+
+```shell
+# deploy changes since a specific commit
+grunt shopify:upload-changed --commit=<commit_hash_from_github>
+```
+
 ### Options
 
 #### api_key
